@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estilo Urbano - Tienda Virtual & Dropshipping Control Center</title>
+    <!-- Tailwind CSS desde CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter & Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fashion: {
+                            50: '#faf8f5',
+                            100: '#f3efe6',
+                            200: '#e5dccb',
+                            600: '#a3845b',
+                            700: '#866943',
+                            900: '#1c1917',
+                        },
+                        dsers: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-stone-800 bg-stone-50 antialiased selection:bg-fashion-900 selection:text-white">
+
+    <!-- BARRA SUPERIOR DE CONMUTADOR DE MODO (TIENDA VS ADMIN DROPSHIPPING) -->
+    <div class="bg-stone-900 text-stone-200 text-xs py-2 px-4 flex items-center justify-between border-b border-stone-800 z-40 sticky top-0">
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span> DSers Sync Active
+            </span>
+            <span class="hidden sm:inline text-stone-400 text-[11px]">Sincronización en tiempo real cliente ↔ dropshipper</span>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <button id="viewToggleStoreBtn" onclick="switchMode('store')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-fashion-600 text-white shadow-sm">
+                <i class="fa-solid fa-store text-[11px]"></i>
+                <span>Vista Tienda</span>
+            </button>
+            <button id="viewToggleAdminBtn" onclick="switchMode('admin')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700">
+                <i class="fa-solid fa-chart-line text-[11px] text-dsers-500"></i>
+                <span>Panel DSers Admin</span>
+                <span id="pendingOrdersBadge" class="ml-1 bg-amber-500 text-stone-900 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE LA VISTA CLIENTE / TIENDA PÚBLICA -->
+    <div id="storeView" class="flex flex-col flex-grow">
+        <!-- ANUNCIO SUPERIOR TIENDA -->
+        <div class="bg-fashion-900 text-stone-200 text-xs py-2 px-4 text-center tracking-widest uppercase font-medium">
+            <span>✨ Envío gratis en todas las compras superiores a $1,000 MXN • Hasta 6 Meses Sin Intereses ✨</span>
+        </div>
+
+        <!-- ENCABEZADO Y NAVEGACIÓN -->
+        <header class="sticky top-[33px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm transition-all">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20 gap-4">
+                    
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 cursor-pointer flex items-center space-x-3" onclick="resetFilters()">
+                        <div class="w-10 h-10 rounded-full bg-fashion-900 text-white flex items-center justify-center font-serif font-bold text-xl shadow-md">
+                            E
+                        </div>
+                        <div>
+                            <span class="font-serif text-2xl font-bold tracking-tight text-fashion-900 uppercase">Estilo<span class="text-fashion-600 font-light">Urbano</span></span>
+                            <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-bold -mt-1">Moda • Calzado • Accesorios</span>
+                        </div>
+                    </div>
+
+                    <!-- Menú de Navegación Desktop -->
+                    <nav class="hidden lg:flex items-center space-x-8 text-xs font-semibold uppercase tracking-wider text-stone-700">
+                        <button onclick="filterByCategory('Todos')" class="hover:text-fashion-600 transition-colors py-1 border-b-2 border-transparent hover:border-fashion-600">Novedades</button>
+                        <button onclick="filterByCategory('Mujer')" class="hover:text-fashion-600 transition-colors py-1 border-b-2 border-transparent hover:border-fashion-600">Mujer</button>
+                        <button onclick="filterByCategory('Hombre')" class="hover:text-fashion-600 transition-colors py-1 border-b-2 border-transparent hover:border-fashion-600">Hombre</button>
+                        <button onclick="filterByCategory('Calzado')" class="hover:text-fashion-600 transition-colors py-1 border-b-2 border-transparent hover:border-fashion-600">Calzado</button>
+                        <button onclick="filterByCategory('Accesorios')" class="hover:text-fashion-600 transition-colors py-1 border-b-2 border-transparent hover:border-fashion-600">Accesorios</button>
+                        <button onclick="filterSaleOnly()" class="text-rose-600 hover:text-rose-700 font-bold py-1 border-b-2 border-transparent hover:border-rose-600 flex items-center space-x-1">
+                            <i class="fa-solid fa-tag text-xs"></i>
+                            <span>Rebajas</span>
+                        </button>
+                    </nav>
+
+                    <!-- Buscador e Iconos de Acción -->
+                    <div class="flex items-center space-x-4">
+                        
+                        <!-- Buscador -->
+                        <div class="relative hidden sm:block w-48 md:w-64">
+                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar prendas, tenis..." 
+                                class="w-full pl-9 pr-8 py-2 bg-stone-100 hover:bg-stone-50 focus:bg-white text-stone-800 text-xs rounded-full border border-transparent focus:border-fashion-600 focus:ring-1 focus:ring-fashion-600 outline-none transition-all">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-2 text-stone-400 hover:text-stone-600">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Wishlist / Favoritos -->
+                        <button onclick="toggleWishlistModal()" class="relative p-2 text-stone-700 hover:text-fashion-600 transition-colors">
+                            <i class="fa-regular fa-heart text-xl"></i>
+                            <span id="wishlistBadge" class="absolute top-0 right-0 bg-fashion-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center scale-0 transition-transform">0</span>
+                        </button>
+
+                        <!-- Carrito -->
+                        <button onclick="toggleCartDrawer()" class="relative p-2 text-stone-700 hover:text-fashion-600 transition-colors">
+                            <i class="fa-solid fa-bag-shopping text-xl"></i>
+                            <span id="cartBadge" class="absolute top-0 right-0 bg-fashion-900 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center scale-0 transition-transform">0</span>
+                        </button>
+
+                        <!-- Menú Móvil Botón -->
+                        <button onclick="toggleMobileMenu()" class="lg:hidden p-2 text-stone-700">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Menú Desplegable Móvil -->
+            <div id="mobileMenu" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-4 space-y-3">
+                <div class="relative mb-3">
+                    <input type="text" oninput="handleSearchMobile(this.value)" placeholder="Buscar productos..." class="w-full pl-9 pr-4 py-2 bg-stone-100 text-xs rounded-lg border outline-none">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs font-semibold uppercase tracking-wider text-stone-700">
+                    <button onclick="filterByCategory('Todos'); toggleMobileMenu()" class="p-2 text-left bg-stone-50 rounded-lg">Novedades</button>
+                    <button onclick="filterByCategory('Mujer'); toggleMobileMenu()" class="p-2 text-left bg-stone-50 rounded-lg">Mujer</button>
+                    <button onclick="filterByCategory('Hombre'); toggleMobileMenu()" class="p-2 text-left bg-stone-50 rounded-lg">Hombre</button>
+                    <button onclick="filterByCategory('Calzado'); toggleMobileMenu()" class="p-2 text-left bg-stone-50 rounded-lg">Calzado</button>
+                    <button onclick="filterByCategory('Accesorios'); toggleMobileMenu()" class="p-2 text-left bg-stone-50 rounded-lg">Accesorios</button>
+                    <button onclick="filterSaleOnly(); toggleMobileMenu()" class="p-2 text-left bg-rose-50 text-rose-600 font-bold rounded-lg">Rebajas %</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- HERO BANNER PROMOCIONAL -->
+        <section class="relative bg-stone-900 text-white overflow-hidden">
+            <div class="absolute inset-0 z-0 opacity-40">
+                <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1800&q=80" alt="Moda Banner" class="w-full h-full object-cover">
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative z-10 flex flex-col items-start justify-center">
+                <span class="inline-block bg-fashion-600/90 text-white text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full mb-4 backdrop-blur-sm">Nueva Colección 2026</span>
+                <h1 class="font-serif text-4xl sm:text-6xl font-extrabold tracking-tight max-w-2xl leading-tight mb-4">Tus Favoritos de Temporada.</h1>
+                <p class="text-stone-300 text-sm sm:text-base max-w-lg mb-8 leading-relaxed">Descubre lo último en moda urbana, calzado en piel fina y accesorios exclusivos diseñados para elevar tu estilo diario.</p>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="scrollToProducts()" class="bg-white hover:bg-stone-100 text-stone-900 font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        Comprar Ahora
+                    </button>
+                    <button onclick="filterSaleOnly(); scrollToProducts()" class="border-2 border-white/80 hover:border-white text-white font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full transition-all hover:bg-white/10">
+                        Ver Rebajas
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTENIDO PRINCIPAL TIENDA -->
+        <main id="catalogSection" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            
+            <!-- Categorías Pills -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-serif text-2xl font-bold text-stone-900">Catálogo de Moda</h2>
+                    <span id="activeCategoryTitle" class="text-xs font-semibold uppercase tracking-wider text-fashion-600">Colección Completa</span>
+                </div>
+                <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none" id="categoriesContainer">
+                    <!-- Generado por JS -->
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                
+                <!-- PANEL LATERAL DE FILTROS -->
+                <aside class="w-full lg:w-64 flex-shrink-0 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm space-y-6">
+                        
+                        <div class="flex items-center justify-between pb-4 border-b border-stone-100">
+                            <h3 class="font-bold text-stone-900 text-sm uppercase tracking-wider flex items-center">
+                                <i class="fa-solid fa-sliders text-fashion-600 mr-2"></i> Filtros
+                            </h3>
+                            <button onclick="resetFilters()" class="text-xs text-fashion-600 hover:text-fashion-700 font-semibold">Limpiar</button>
+                        </div>
+
+                        <!-- Filtro Tallas -->
+                        <div>
+                            <h4 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">Talla</h4>
+                            <div class="flex flex-wrap gap-2" id="sizeFiltersContainer">
+                                <!-- Generado con JS -->
+                            </div>
+                        </div>
+
+                        <!-- Filtro Rango de Precio -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-xs font-bold text-stone-500 uppercase tracking-wider">Precio Máx</h4>
+                                <span id="priceValue" class="text-xs font-bold text-fashion-700">$2,500</span>
+                            </div>
+                            <input type="range" id="priceRange" min="200" max="2500" step="50" value="2500" oninput="updatePriceLabel(this.value)" onchange="applyFilters()" class="w-full accent-fashion-600 cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-stone-400 mt-1">
+                                <span>$200</span>
+                                <span>$2,500+</span>
+                            </div>
+                        </div>
+
+                        <!-- Ordenar Por -->
+                        <div>
+                            <h4 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Ordenar por</h4>
+                            <select id="sortBy" onchange="applyFilters()" class="w-full text-xs bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-stone-700 focus:outline-none focus:border-fashion-600">
+                                <option value="popular">Más Populares</option>
+                                <option value="price-asc">Precio: Menor a Mayor</option>
+                                <option value="price-desc">Precio: Mayor a Menor</option>
+                                <option value="rating">Mejor Calificados</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Banner Asesor de Imagen / Moda -->
+                    <div class="bg-fashion-100 rounded-2xl p-5 border border-fashion-200 text-center space-y-3">
+                        <div class="w-10 h-10 bg-fashion-600 text-white rounded-full flex items-center justify-center text-lg mx-auto shadow-md">
+                            <i class="fa-solid fa-shirt"></i>
+                        </div>
+                        <h4 class="font-serif font-bold text-stone-900 text-sm">¿Dudas con tu Talla?</h4>
+                        <p class="text-xs text-stone-600">Revisa nuestra guía de medidas detallada para ropa y calzado antes de comprar.</p>
+                        <button onclick="showToast('Guía de Tallas: S (32), M (34), L (36), XL (38)', 'info')" class="text-xs bg-fashion-900 hover:bg-stone-800 text-white font-semibold px-4 py-2 rounded-xl transition-colors w-full">
+                            Ver Guía de Tallas
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- GRILLA DE PRODUCTOS -->
+                <section class="flex-1">
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xs text-stone-500 uppercase tracking-wider">Mostrando <span id="productCount" class="font-bold text-stone-900">0</span> artículos</p>
+                        <div id="activeFiltersBadge" class="hidden text-[11px] bg-fashion-100 text-fashion-700 px-3 py-1 rounded-full font-semibold">
+                            Filtros aplicados
+                        </div>
+                    </div>
+
+                    <!-- Grid -->
+                    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Productos inyectados con JS -->
+                    </div>
+
+                    <!-- Estado Vacío -->
+                    <div id="emptyState" class="hidden text-center py-20 bg-white rounded-2xl border border-stone-200 p-8">
+                        <i class="fa-solid fa-bag-shopping text-5xl text-stone-300 mb-4"></i>
+                        <h3 class="font-serif text-xl font-bold text-stone-800 mb-1">No encontramos resultados</h3>
+                        <p class="text-xs text-stone-500 mb-4">Prueba cambiando el filtro de tallas, categoría o limpiando la búsqueda.</p>
+                        <button onclick="resetFilters()" class="inline-flex items-center bg-fashion-900 text-white text-xs uppercase tracking-widest font-bold px-6 py-3 rounded-xl hover:bg-stone-800 transition-colors">
+                            Restablecer Filtros
+                        </button>
+                    </div>
+
+                </section>
+            </div>
+
+        </main>
+
+        <!-- FOOTER TIENDA -->
+        <footer class="bg-stone-900 text-stone-400 text-xs mt-20 border-t border-stone-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-2 text-white font-serif font-bold text-xl">
+                        <span>Estilo<span class="text-fashion-600">Urbano</span></span>
+                    </div>
+                    <p class="text-stone-400 leading-relaxed">Tu destino exclusivo de moda contemporánea, ropa urbana de tendencia, calzado premium y accesorios elegantes.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider">Atención al Cliente</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition-colors">Rastreo de Pedido</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cambios y Devoluciones</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Guía de Cuidados de Prenda</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Preguntas Frecuentes</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider">Categorías Destacadas</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="filterByCategory('Mujer')" class="hover:text-white transition-colors">Colección Mujer</a></li>
+                        <li><a href="#" onclick="filterByCategory('Hombre')" class="hover:text-white transition-colors">Colección Hombre</a></li>
+                        <li><a href="#" onclick="filterByCategory('Calzado')" class="hover:text-white transition-colors">Zapatos y Tenis</a></li>
+                        <li><a href="#" onclick="filterByCategory('Accesorios')" class="hover:text-white transition-colors">Bolsas y Joyería</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-3 uppercase tracking-wider">Pagos Seguros</h4>
+                    <div class="flex flex-wrap gap-3 text-2xl text-stone-500 mb-3">
+                        <i class="fa-brands fa-cc-visa hover:text-white transition-colors"></i>
+                        <i class="fa-brands fa-cc-mastercard hover:text-white transition-colors"></i>
+                        <i class="fa-brands fa-cc-paypal hover:text-white transition-colors"></i>
+                        <i class="fa-brands fa-apple-pay hover:text-white transition-colors"></i>
+                    </div>
+                    <p class="text-[11px] text-stone-500">Transacciones protegidas con cifrado SSL de alta seguridad.</p>
+                </div>
+            </div>
+            <div class="bg-black py-4 text-center text-stone-500">
+                © 2026 Estilo Urbano Boutique. Todos los derechos reservados.
+            </div>
+        </footer>
+    </div>
+
+    <!-- CONTENEDOR VISTA PANEL ADMIN DROPSHIPPING (STYLE DSers / SHOPIFY UI) -->
+    <div id="adminView" class="hidden flex-grow bg-slate-100 flex flex-col">
+        <!-- HEADER DROPSHIPPING DASHBOARD -->
+        <header class="bg-slate-900 text-white border-b border-slate-800 py-4 px-6 sticky top-[33px] z-30 shadow-md">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-dsers-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-dsers-500/20">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="font-bold text-lg text-white">DSers Dropshipping Control Center</h1>
+                            <span class="bg-dsers-500/20 text-dsers-400 border border-dsers-500/30 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Pro Merchant</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Sincronizador automático con AliExpress, CJ Dropshipping y proveedores asiáticos</p>
+                    </div>
+                </div>
+
+                <!-- NAVEGACIÓN DE PESTAÑAS DEL ADMIN -->
+                <div class="flex items-center space-x-1 bg-slate-800 p-1 rounded-xl border border-slate-700/60 overflow-x-auto text-xs">
+                    <button onclick="switchAdminTab('kpis')" id="tabBtnKpis" class="admin-tab-btn active px-3.5 py-2 rounded-lg font-bold transition-all text-white bg-dsers-600 shadow">
+                        <i class="fa-solid fa-chart-pie mr-1.5"></i> KPIs & Métricas
+                    </button>
+                    <button onclick="switchAdminTab('importer')" id="tabBtnImporter" class="admin-tab-btn px-3.5 py-2 rounded-lg font-bold transition-all text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> DSers Importador
+                    </button>
+                    <button onclick="switchAdminTab('suppliers')" id="tabBtnSuppliers" class="admin-tab-btn px-3.5 py-2 rounded-lg font-bold transition-all text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-truck-ramp-box mr-1.5"></i> Proveedores
+                    </button>
+                    <button onclick="switchAdminTab('orders')" id="tabBtnOrders" class="admin-tab-btn px-3.5 py-2 rounded-lg font-bold transition-all text-slate-300 hover:text-white relative">
+                        <i class="fa-solid fa-boxes-packing mr-1.5"></i> Pedidos Auto-Sync
+                        <span id="tabOrderCount" class="ml-1 bg-amber-500 text-slate-900 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 space-y-6">
+
+            <!-- TAB 1: METRICAS Y ANALYTICS -->
+            <section id="adminTabKpis" class="space-y-6 fade-in">
+                <!-- Tarjetas KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Ventas Brutas</span>
+                            <h3 id="kpiSales" class="text-2xl font-black text-slate-900">$0.00</h3>
+                            <span class="text-[10px] font-semibold text-emerald-600"><i class="fa-solid fa-arrow-trend-up"></i> Pedidos pagados en tienda</span>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Costo Proveedores (COGS)</span>
+                            <h3 id="kpiCosts" class="text-2xl font-black text-slate-800">$0.00</h3>
+                            <span class="text-[10px] font-semibold text-slate-500"><i class="fa-solid fa-plane-departure"></i> Costos DSers / AliExpress</span>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Ganancia Neta</span>
+                            <h3 id="kpiProfit" class="text-2xl font-black text-dsers-600">$0.00</h3>
+                            <span class="text-[10px] font-semibold text-dsers-600"><i class="fa-solid fa-chart-line"></i> Margen promedio: 55%</span>
+                        </div>
+                        <div class="w-12 h-12 bg-dsers-50 text-dsers-600 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-piggy-bank"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Pendientes DSers</span>
+                            <h3 id="kpiPendingOrders" class="text-2xl font-black text-amber-600">0</h3>
+                            <span class="text-[10px] font-semibold text-amber-600"><i class="fa-solid fa-clock"></i> Requieren 1-Click Fulfillment</span>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Simulación y Resumen de API DSers -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Desglose Financiero Dropshipping</h3>
+                                <p class="text-xs text-slate-500">Comparativa entre ventas e importe pagado a proveedores asiáticos</p>
+                            </div>
+                            <span class="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">Tiempo Real</span>
+                        </div>
+
+                        <!-- Gráfico Visual con barras de progreso -->
+                        <div class="space-y-4 pt-2">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="text-slate-700">Ingresos Totales (Clientes)</span>
+                                    <span id="barSalesVal" class="text-emerald-600">$0.00</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div id="barSales" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="text-slate-700">Costo de Proveedor (AliExpress API)</span>
+                                    <span id="barCostsVal" class="text-slate-600">$0.00</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div id="barCosts" class="bg-slate-700 h-full w-0 transition-all duration-500"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="text-slate-700">Margen de Beneficio Libre</span>
+                                    <span id="barProfitVal" class="text-dsers-600">$0.00</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div id="barProfit" class="bg-dsers-600 h-full w-0 transition-all duration-500"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 grid grid-cols-3 gap-4 text-center border-t border-slate-100 pt-4 text-xs">
+                            <div>
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Tiempo Prom. Envío</span>
+                                <strong class="text-slate-800 text-sm">7 - 12 Días</strong>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Paquetería Principal</span>
+                                <strong class="text-slate-800 text-sm">YunExpress / CJ</strong>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Tasa de Entrega</span>
+                                <strong class="text-emerald-600 text-sm">99.2%</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DSers Status Card -->
+                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between space-y-6">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-[10px] uppercase tracking-widest font-bold text-dsers-400">Estado de API DSers</span>
+                                <span class="flex h-2 w-2 relative">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                            </div>
+                            <h3 class="font-serif font-bold text-xl mb-2">Conectado a AliExpress Official Open Platform</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Sincronización automática de precios de costo, inventarios en bodegas de China/EE.UU y número de seguimiento para tus clientes.
+                            </p>
+                        </div>
+
+                        <div class="space-y-3 bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Cuenta de Proveedor:</span>
+                                <span class="font-bold text-white">AliExpress Official API</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Auto-Update Precios:</span>
+                                <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Activo</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Mapeo de Tallas:</span>
+                                <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Sincronizado</span>
+                            </div>
+                        </div>
+
+                        <button onclick="showToast('Sincronizando inventarios de proveedores asiáticos...', 'info')" class="w-full py-3 bg-dsers-600 hover:bg-dsers-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                            Forzar Sync de Inventario
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: IMPORTADOR DSERS / ALIEXPRESS -->
+            <section id="adminTabImporter" class="hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="font-bold text-slate-900 text-base flex items-center">
+                            <i class="fa-solid fa-file-import text-dsers-600 mr-2"></i> Importador Rápido de Productos (DSers / AliExpress)
+                        </h2>
+                        <p class="text-xs text-slate-500">Pega el enlace o ID de producto de AliExpress o CJ Dropshipping para calcular tu margen e importarlo directo a tu catálogo público.</p>
+                    </div>
+
+                    <form onsubmit="handleImportProduct(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enlace o ID de Producto AliExpress / DSers</label>
+                                <div class="relative">
+                                    <input type="text" id="importUrlInput" required placeholder="https://www.aliexpress.com/item/100500612345.html" class="w-full text-xs p-3 pl-9 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-dsers-500">
+                                    <i class="fa-solid fa-link absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Categoría en Tu Tienda</label>
+                                <select id="importCategorySelect" class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-dsers-500 font-semibold">
+                                    <option value="Mujer">Mujer</option>
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Calzado">Calzado</option>
+                                    <option value="Accesorios">Accesorios</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Calculadora de Margen de Ganancia -->
+                        <div class="p-4 bg-dsers-50 border border-dsers-100 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Estrategia de Precio de Venta</label>
+                                <select id="importMultiplier" onchange="calculateImportPreview()" class="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-800">
+                                    <option value="2.0">Multiplicar Costo x 2.0 (50% Margen)</option>
+                                    <option value="2.5" selected>Multiplicar Costo x 2.5 (60% Margen)</option>
+                                    <option value="3.0">Multiplicar Costo x 3.0 (66% Margen)</option>
+                                </select>
+                            </div>
+
+                            <div class="bg-white p-3 rounded-xl border border-dsers-200 text-xs text-center">
+                                <span class="text-slate-400 block text-[10px] font-bold uppercase">Ejemplo Costo Proveedor</span>
+                                <strong id="previewCostText" class="text-slate-800">$350.00 MXN</strong>
+                            </div>
+
+                            <div class="bg-white p-3 rounded-xl border border-dsers-200 text-xs text-center">
+                                <span class="text-dsers-600 block text-[10px] font-bold uppercase">Precio Sugerido en Tienda</span>
+                                <strong id="previewPriceText" class="text-dsers-700 text-sm font-bold">$875.00 MXN</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-2">
+                            <button type="button" onclick="loadSampleImport()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">
+                                Cargar Ejemplo
+                            </button>
+                            <button type="submit" id="importSubmitBtn" class="px-6 py-2.5 bg-dsers-600 hover:bg-dsers-700 text-white text-xs uppercase tracking-wider font-bold rounded-xl shadow-md transition-all flex items-center space-x-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span>Importar y Publicar en Tienda</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Historial / Lista de Empuje de DSers -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider mb-4">Lista de Empuje (Push List) Reciente</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Producto</th>
+                                    <th class="p-3">Categoría</th>
+                                    <th class="p-3">Costo Proveedor</th>
+                                    <th class="p-3">Precio Venta</th>
+                                    <th class="p-3">Margen Neto</th>
+                                    <th class="p-3">Estado DSers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pushListTableBody" class="divide-y divide-slate-100">
+                                <!-- Llenado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: GESTIÓN Y MAPEO DE PROVEEDORES ASIÁTICOS -->
+            <section id="adminTabSuppliers" class="hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="font-bold text-slate-900 text-base">Mapeo de Proveedores de Tienda (Supplier Mapping)</h2>
+                            <p class="text-xs text-slate-500">Asigna proveedores de respaldo o cambia de tienda de AliExpress si se agota el inventario.</p>
+                        </div>
+                        <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-shield-halved mr-1"></i> Protección de Stock Activa
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Producto Tienda</th>
+                                    <th class="p-3">Proveedor Principal</th>
+                                    <th class="p-3">Proveedor Alternativo</th>
+                                    <th class="p-3">Costo ($)</th>
+                                    <th class="p-3">Precio Venta ($)</th>
+                                    <th class="p-3">Ganancia / Unidad</th>
+                                    <th class="p-3">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierMappingTable" class="divide-y divide-slate-100">
+                                <!-- Inyectado con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: PEDIDOS AUTO-SYNC & FULFILLMENT -->
+            <section id="adminTabOrders" class="hidden space-y-6 fade-in">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 class="font-bold text-slate-900 text-base flex items-center">
+                                <i class="fa-solid fa-boxes-packing text-dsers-600 mr-2"></i> Procesamiento de Pedidos Auto-Sync (DSers)
+                            </h2>
+                            <p class="text-xs text-slate-500">Procesa los pedidos recibidos en tu tienda con 1 Clic para enviarlos directo al proveedor en China.</p>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button onclick="processAllOrders1Click()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center space-x-1.5">
+                                <i class="fa-solid fa-bolt text-xs"></i>
+                                <span>1-Click Order All en DSers</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Pedidos -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">ID Pedido</th>
+                                    <th class="p-3">Cliente / Destino</th>
+                                    <th class="p-3">Prenda / Talla</th>
+                                    <th class="p-3">Total Cliente</th>
+                                    <th class="p-3">Costo Proveedor</th>
+                                    <th class="p-3">Ganancia Net</th>
+                                    <th class="p-3">Estado DSers</th>
+                                    <th class="p-3">Acción Fulfillment</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersAdminTableBody" class="divide-y divide-slate-100">
+                                <!-- Inyectado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- DRAWER CARRITO TIENDA -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 overflow-hidden hidden" role="dialog" aria-modal="true">
+        <div onclick="toggleCartDrawer()" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity"></div>
+        <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                
+                <!-- Drawer Header -->
+                <div class="p-6 bg-stone-900 text-white flex items-center justify-between">
+                    <h2 class="font-serif text-lg font-bold flex items-center">
+                        <i class="fa-solid fa-bag-shopping text-fashion-600 mr-2"></i> Mi Bolsa de Compras
+                    </h2>
+                    <button onclick="toggleCartDrawer()" class="text-stone-400 hover:text-white p-1">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Barra de Envío Gratis -->
+                <div class="bg-fashion-100 p-4 border-b border-fashion-200">
+                    <div class="flex justify-between text-xs font-semibold text-stone-800 mb-1.5" id="shippingProgressText">
+                        <span>Progreso para Envío Gratis</span>
+                        <span>$0 / $1,000</span>
+                    </div>
+                    <div class="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
+                        <div id="shippingProgressBar" class="bg-fashion-600 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- Contenido Items -->
+                <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <!-- Dinámico -->
+                </div>
+
+                <!-- Footer Checkout -->
+                <div class="p-6 border-t border-stone-200 bg-stone-50 space-y-4">
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between text-stone-600">
+                            <span>Subtotal</span>
+                            <span id="cartSubtotal" class="font-bold text-stone-900">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-stone-600">
+                            <span>Envío Estándar</span>
+                            <span id="cartShipping" class="font-bold text-emerald-600">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-200">
+                            <span>Total</span>
+                            <span id="cartTotal" class="text-fashion-700 font-serif text-xl">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button id="checkoutBtn" onclick="openCheckoutModal()" class="w-full bg-fashion-900 hover:bg-stone-800 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center space-x-2 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span>Iniciar Pago</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISTA RÁPIDA DE PRODUCTO -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div onclick="closeProductModal()" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 z-10 relative shadow-2xl overflow-hidden fade-in max-h-[90vh] overflow-y-auto">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 w-9 h-9 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center text-stone-500 transition-colors z-20">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modalContent">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHECKOUT TIENDA -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div onclick="closeCheckoutModal()" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 md:p-8 z-10 relative shadow-2xl fade-in max-h-[90vh] overflow-y-auto">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 w-9 h-9 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center text-stone-500 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="font-serif text-2xl font-bold text-stone-900 mb-1 flex items-center">
+                <i class="fa-solid fa-lock text-fashion-600 mr-2 text-xl"></i> Finalizar Pedido
+            </h2>
+            <p class="text-xs text-stone-500 mb-6">Ingresa tus datos de envío y selecciona tu método de pago preferido.</p>
+
+            <form id="checkoutForm" onsubmit="processPayment(event)" class="space-y-5">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">1. Dirección de Envío</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" id="custName" required placeholder="Nombre Completo" class="w-full text-xs p-3 border border-stone-200 rounded-xl focus:ring-1 focus:ring-fashion-600 outline-none">
+                        <input type="email" id="custEmail" required placeholder="Correo Electrónico" class="w-full text-xs p-3 border border-stone-200 rounded-xl focus:ring-1 focus:ring-fashion-600 outline-none">
+                        <input type="text" id="custAddress" required placeholder="Dirección (Calle, número y colonia)" class="w-full text-xs p-3 border border-stone-200 rounded-xl focus:ring-1 focus:ring-fashion-600 outline-none md:col-span-2">
+                        <input type="text" id="custCity" required placeholder="Ciudad / Estado" class="w-full text-xs p-3 border border-stone-200 rounded-xl focus:ring-1 focus:ring-fashion-600 outline-none">
+                        <input type="tel" id="custPhone" required placeholder="Teléfono Móvil" class="w-full text-xs p-3 border border-stone-200 rounded-xl focus:ring-1 focus:ring-fashion-600 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">2. Método de Pago</h3>
+                    <div class="p-4 border border-stone-200 rounded-2xl bg-stone-50 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="p-3 bg-white border border-stone-200 rounded-xl flex items-center space-x-2 cursor-pointer font-medium">
+                                <input type="radio" name="payMethod" checked class="text-fashion-600 focus:ring-0">
+                                <span>Tarjeta Crédito / Débito</span>
+                            </label>
+                            <label class="p-3 bg-white border border-stone-200 rounded-xl flex items-center space-x-2 cursor-pointer font-medium">
+                                <input type="radio" name="payMethod" class="text-fashion-600 focus:ring-0">
+                                <span>PayPal / Mercado Pago</span>
+                            </label>
+                        </div>
+                        <input type="text" required placeholder="Número de Tarjeta Ficticio (4111...)" class="w-full text-xs p-3 border border-stone-200 bg-white rounded-xl outline-none">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" required placeholder="MM/AA" class="w-full text-xs p-3 border border-stone-200 bg-white rounded-xl outline-none">
+                            <input type="password" required maxlength="4" placeholder="CVV" class="w-full text-xs p-3 border border-stone-200 bg-white rounded-xl outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs text-stone-400">Total a Pagar</span>
+                        <span id="checkoutTotalAmount" class="font-serif text-2xl font-bold text-fashion-700">$0.00</span>
+                    </div>
+                    <button type="submit" id="paySubmitBtn" class="bg-fashion-900 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-md transition-all flex items-center space-x-2">
+                        <span>Pagar Pedido</span>
+                        <i class="fa-solid fa-check text-xs"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Éxito de Compra -->
+            <div id="paymentSuccess" class="hidden text-center py-8 space-y-4">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-stone-900">¡Gracias por tu compra!</h3>
+                <p class="text-xs text-stone-600 max-w-sm mx-auto">Hemos recibido tu pedido <strong id="orderIdText" class="text-stone-800">#EU-0000</strong>. Tu orden ha sido enviada automáticamente a nuestro centro de dropshipping para envío expreso.</p>
+                <div class="bg-stone-50 p-4 rounded-xl text-xs text-stone-600 text-left space-y-1">
+                    <p><strong>Entrega estimada:</strong> 5 a 9 días hábiles (Directo de Fábrica).</p>
+                    <p><strong>Atención al cliente:</strong> soporte@estilourbano.com</p>
+                </div>
+                <button onclick="finishOrder()" class="w-full bg-fashion-900 text-white text-xs uppercase tracking-widest font-bold py-3.5 rounded-xl hover:bg-stone-800 transition-colors">
+                    Continuar Comprando
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICACIÓN -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-stone-900 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-medium border border-stone-800">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+            <span id="toastMessage">Notificación</span>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT TIENDA & DROPSHIPPING CONTROL CENTER -->
+    <script>
+        // CATÁLOGO INICIAL DE PRODUCTOS DROPSHIPPING
+        let PRODUCTS = [
+            {
+                id: 1,
+                name: "Vestido Elegante Floral Midi",
+                category: "Mujer",
+                price: 890.00,
+                costPrice: 350.00,
+                supplier: "AliExpress Store #10492 - ShenZhen Fashion",
+                altSupplier: "CJ Dropshipping Warehouse CA",
+                originalPrice: 1190.00,
+                rating: 4.9,
+                reviews: 88,
+                sizes: ["XS", "S", "M", "L"],
+                image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=700&q=80",
+                description: "Vestido midi confeccionado en tela fluida con estampado floral primaveral. Importado vía DSers con proveedor directo.",
+                isSale: true
+            },
+            {
+                id: 2,
+                name: "Chaqueta de Mezclilla Denim Hombre",
+                category: "Hombre",
+                price: 1150.00,
+                costPrice: 480.00,
+                supplier: "Guangzhou Denim Official Store",
+                altSupplier: "AliExpress Store #9921",
+                originalPrice: 1150.00,
+                rating: 4.8,
+                reviews: 64,
+                sizes: ["S", "M", "L", "XL"],
+                image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=700&q=80",
+                description: "Chaqueta vaquera de corte moderno en tono azul medio. Algodón 100% resistente con botones metálicos reforzados.",
+                isSale: false
+            },
+            {
+                id: 3,
+                name: "Tenis de Cuero Urbanos Blancos",
+                category: "Calzado",
+                price: 1490.00,
+                costPrice: 580.00,
+                supplier: "Zhejiang Footwear Co. Ltd",
+                altSupplier: "YunExpress Footwear Direct",
+                originalPrice: 1790.00,
+                rating: 5.0,
+                reviews: 142,
+                sizes: ["24", "25", "26", "27", "28"],
+                image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=700&q=80",
+                description: "Tenis minimalistas en piel genuina con plantilla acolchada ergonómica. Máximo confort y versatilidad.",
+                isSale: true
+            },
+            {
+                id: 4,
+                name: "Gafas de Sol Estilo Retro UV400",
+                category: "Accesorios",
+                price: 450.00,
+                costPrice: 120.00,
+                supplier: "Yiwu Eyewear Global Outlet",
+                altSupplier: "AliExpress Sunglasses Store",
+                originalPrice: 450.00,
+                rating: 4.7,
+                reviews: 53,
+                sizes: ["Única"],
+                image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=700&q=80",
+                description: "Lentes de sol con armazón de acetato en tono carey y micas con protección polarizada contra rayos UV.",
+                isSale: false
+            },
+            {
+                id: 5,
+                name: "Bolsa Crossbody de Piel Fina",
+                category: "Accesorios",
+                price: 1280.00,
+                costPrice: 490.00,
+                supplier: "Dongguan Leather Goods Store",
+                altSupplier: "CJ Dropshipping Leather",
+                originalPrice: 1550.00,
+                rating: 4.9,
+                reviews: 110,
+                sizes: ["Única"],
+                image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=700&q=80",
+                description: "Bolso cruzado compacto con compartimentos internos de cierre y correa ajustable de cadena dorada.",
+                isSale: true
+            }
+        ];
+
+        // PEDIDOS DROPSHIPPING (MOCK INITIAL DATA)
+        let DROPSHIP_ORDERS = [
+            {
+                id: "EU-89210",
+                customerName: "Sofía Martínez",
+                city: "Ciudad de México",
+                items: "Vestido Elegante Floral Midi (Talla M)",
+                totalSales: 890.00,
+                costSupplier: 350.00,
+                profit: 540.00,
+                status: "Enviado a DSers",
+                trackingNumber: "YUN982103812CN",
+                courier: "YunExpress",
+                date: "2026-10-18"
+            },
+            {
+                id: "EU-89211",
+                customerName: "Carlos Gómez",
+                city: "Guadalajara, JAL",
+                items: "Tenis de Cuero Urbanos Blancos (Talla 27)",
+                totalSales: 1490.00,
+                costSupplier: 580.00,
+                profit: 910.00,
+                status: "Pendiente de Envío",
+                trackingNumber: "Sin Asignar",
+                courier: "AliExpress Standard",
+                date: "2026-10-18"
+            }
+        ];
+
+        const CATEGORIES = ["Todos", "Mujer", "Hombre", "Calzado", "Accesorios"];
+        const SIZES = ["XS", "S", "M", "L", "XL", "24", "25", "26", "27"];
+
+        // ESTADO GLOBAL
+        let state = {
+            currentMode: 'store', // 'store' o 'admin'
+            activeAdminTab: 'kpis',
+            cart: [],
+            wishlist: [],
+            selectedCategory: "Todos",
+            selectedSize: null,
+            searchQuery: "",
+            maxPrice: 2500,
+            sortBy: "popular",
+            onlySale: false
+        };
+
+        window.onload = function() {
+            loadStorage();
+            renderCategories();
+            renderSizeFilters();
+            renderProducts();
+            updateCartUI();
+            updateWishlistUI();
+            updateAdminDashboard();
+        };
+
+        // SWITCHER TIENDA / ADMIN
+        function switchMode(mode) {
+            state.currentMode = mode;
+            const storeView = document.getElementById("storeView");
+            const adminView = document.getElementById("adminView");
+            const btnStore = document.getElementById("viewToggleStoreBtn");
+            const btnAdmin = document.getElementById("viewToggleAdminBtn");
+
+            if (mode === 'admin') {
+                storeView.classList.add("hidden");
+                adminView.classList.remove("hidden");
+
+                btnStore.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-stone-800 text-stone-300 hover:text-white";
+                btnAdmin.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-dsers-600 text-white shadow-sm";
+
+                updateAdminDashboard();
+                showToast("Accediendo al Panel Admin DSers Dropshipping", "info");
+            } else {
+                adminView.classList.add("hidden");
+                storeView.classList.remove("hidden");
+
+                btnAdmin.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-stone-800 text-stone-300 hover:text-white";
+                btnStore.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 bg-fashion-600 text-white shadow-sm";
+
+                renderProducts();
+            }
+        }
+
+        // CONTROL PESTAÑAS DEL ADMIN
+        function switchAdminTab(tabName) {
+            state.activeAdminTab = tabName;
+            
+            // Ocultar todas las pestañas
+            document.getElementById("adminTabKpis").classList.add("hidden");
+            document.getElementById("adminTabImporter").classList.add("hidden");
+            document.getElementById("adminTabSuppliers").classList.add("hidden");
+            document.getElementById("adminTabOrders").classList.add("hidden");
+
+            // Quitar estilos activos
+            document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+                btn.className = "admin-tab-btn px-3.5 py-2 rounded-lg font-bold transition-all text-slate-300 hover:text-white";
+            });
+
+            if (tabName === 'kpis') {
+                document.getElementById("adminTabKpis").classList.remove("hidden");
+                document.getElementById("tabBtnKpis").className = "admin-tab-btn active px-3.5 py-2 rounded-lg font-bold transition-all text-white bg-dsers-600 shadow";
+            } else if (tabName === 'importer') {
+                document.getElementById("adminTabImporter").classList.remove("hidden");
+                document.getElementById("tabBtnImporter").className = "admin-tab-btn active px-3.5 py-2 rounded-lg font-bold transition-all text-white bg-dsers-600 shadow";
+            } else if (tabName === 'suppliers') {
+                document.getElementById("adminTabSuppliers").classList.remove("hidden");
+                document.getElementById("tabBtnSuppliers").className = "admin-tab-btn active px-3.5 py-2 rounded-lg font-bold transition-all text-white bg-dsers-600 shadow";
+                renderSupplierMappingTable();
+            } else if (tabName === 'orders') {
+                document.getElementById("adminTabOrders").classList.remove("hidden");
+                document.getElementById("tabBtnOrders").className = "admin-tab-btn active px-3.5 py-2 rounded-lg font-bold transition-all text-white bg-dsers-600 shadow";
+                renderAdminOrdersTable();
+            }
+        }
+
+        // METRICAS & DASHBOARD UPDATER
+        function updateAdminDashboard() {
+            const totalSales = DROPSHIP_ORDERS.reduce((sum, o) => sum + o.totalSales, 0);
+            const totalCosts = DROPSHIP_ORDERS.reduce((sum, o) => sum + o.costSupplier, 0);
+            const totalProfit = totalSales - totalCosts;
+            const pendingOrders = DROPSHIP_ORDERS.filter(o => o.status === "Pendiente de Envío").length;
+
+            document.getElementById("kpiSales").innerText = `$${totalSales.toFixed(2)}`;
+            document.getElementById("kpiCosts").innerText = `$${totalCosts.toFixed(2)}`;
+            document.getElementById("kpiProfit").innerText = `$${totalProfit.toFixed(2)}`;
+            document.getElementById("kpiPendingOrders").innerText = pendingOrders;
+
+            document.getElementById("pendingOrdersBadge").innerText = pendingOrders;
+            document.getElementById("tabOrderCount").innerText = pendingOrders;
+
+            // Barras de comparación
+            const maxVal = Math.max(totalSales, 1000);
+            document.getElementById("barSalesVal").innerText = `$${totalSales.toFixed(2)}`;
+            document.getElementById("barCostsVal").innerText = `$${totalCosts.toFixed(2)}`;
+            document.getElementById("barProfitVal").innerText = `$${totalProfit.toFixed(2)}`;
+
+            document.getElementById("barSales").style.width = `${Math.min((totalSales / maxVal) * 100, 100)}%`;
+            document.getElementById("barCosts").style.width = `${Math.min((totalCosts / maxVal) * 100, 100)}%`;
+            document.getElementById("barProfit").style.width = `${Math.min((totalProfit / maxVal) * 100, 100)}%`;
+
+            renderPushListTable();
+            renderSupplierMappingTable();
+            renderAdminOrdersTable();
+        }
+
+        // LÓGICA DE IMPORTACIÓN DE PRODUCTO (DSers SIMULATOR)
+        function handleImportProduct(event) {
+            event.preventDefault();
+            const url = document.getElementById("importUrlInput").value.trim();
+            const category = document.getElementById("importCategorySelect").value;
+            const mult = parseFloat(document.getElementById("importMultiplier").value);
+
+            const costPrice = Math.floor(Math.random() * 300) + 200; // Simular costo
+            const sellingPrice = costPrice * mult;
+            const newId = PRODUCTS.length + 1;
+
+            const newProduct = {
+                id: newId,
+                name: `Prenda Importada DSers #${Math.floor(1000 + Math.random() * 9000)}`,
+                category: category,
+                price: sellingPrice,
+                costPrice: costPrice,
+                supplier: "AliExpress DSers Official Merchant Store",
+                altSupplier: "CJ Dropshipping Direct Wholesaler",
+                originalPrice: sellingPrice * 1.2,
+                rating: 5.0,
+                reviews: 1,
+                sizes: category === "Calzado" ? ["24", "25", "26", "27"] : ["S", "M", "L", "XL"],
+                image: category === "Calzado" 
+                    ? "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=700&q=80"
+                    : "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=700&q=80",
+                description: "Producto recién importado directo del proveedor en China utilizando la integración automática con DSers.",
+                isSale: true
+            };
+
+            PRODUCTS.unshift(newProduct);
+            saveStorage();
+            renderPushListTable();
+            renderProducts();
+            updateAdminDashboard();
+
+            document.getElementById("importUrlInput").value = "";
+            showToast("¡Producto importado y publicado en la tienda cliente exitosamente!", "success");
+        }
+
+        function calculateImportPreview() {
+            const mult = parseFloat(document.getElementById("importMultiplier").value);
+            const cost = 350.00;
+            const price = cost * mult;
+            document.getElementById("previewCostText").innerText = `$${cost.toFixed(2)} MXN`;
+            document.getElementById("previewPriceText").innerText = `$${price.toFixed(2)} MXN`;
+        }
+
+        function loadSampleImport() {
+            document.getElementById("importUrlInput").value = "https://www.aliexpress.com/item/1005007821903.html";
+            showToast("Enlace de prueba cargado.", "info");
+        }
+
+        function renderPushListTable() {
+            const tbody = document.getElementById("pushListTableBody");
+            tbody.innerHTML = PRODUCTS.slice(0, 5).map(p => {
+                const profit = p.price - p.costPrice;
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-bold text-slate-800 flex items-center space-x-2">
+                            <img src="${p.image}" class="w-8 h-8 rounded object-cover">
+                            <span class="truncate max-w-[150px]">${p.name}</span>
+                        </td>
+                        <td class="p-3 font-semibold text-slate-600">${p.category}</td>
+                        <td class="p-3 text-slate-600 font-medium">$${p.costPrice.toFixed(2)}</td>
+                        <td class="p-3 text-slate-900 font-bold">$${p.price.toFixed(2)}</td>
+                        <td class="p-3 text-emerald-600 font-bold">+$${profit.toFixed(2)}</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">Publicado en Tienda</span></td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderSupplierMappingTable() {
+            const tbody = document.getElementById("supplierMappingTable");
+            tbody.innerHTML = PRODUCTS.map(p => {
+                const profit = p.price - p.costPrice;
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-bold text-slate-800 flex items-center space-x-2">
+                            <img src="${p.image}" class="w-7 h-7 rounded object-cover">
+                            <span>${p.name}</span>
+                        </td>
+                        <td class="p-3 font-medium text-slate-600"><i class="fa-solid fa-store text-dsers-500 mr-1"></i> ${p.supplier}</td>
+                        <td class="p-3 text-slate-500">${p.altSupplier}</td>
+                        <td class="p-3 font-bold text-slate-700">$${p.costPrice.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-slate-900">$${p.price.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-emerald-600">+$${profit.toFixed(2)}</td>
+                        <td class="p-3">
+                            <button onclick="changeSupplier(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold">
+                                Cambiar Proveedor
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function changeSupplier(productId) {
+            const p = PRODUCTS.find(item => item.id === productId);
+            if (!p) return;
+            const temp = p.supplier;
+            p.supplier = p.altSupplier;
+            p.altSupplier = temp;
+            saveStorage();
+            renderSupplierMappingTable();
+            showToast(`Proveedor actualizado para ${p.name}`, "info");
+        }
+
+        function renderAdminOrdersTable() {
+            const tbody = document.getElementById("ordersAdminTableBody");
+            tbody.innerHTML = DROPSHIP_ORDERS.map(order => {
+                const isPending = order.status === "Pendiente de Envío";
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-extrabold text-slate-900">${order.id}</td>
+                        <td class="p-3">
+                            <strong class="block text-slate-800">${order.customerName}</strong>
+                            <span class="text-[10px] text-slate-400">${order.city}</span>
+                        </td>
+                        <td class="p-3 text-slate-700 font-medium">${order.items}</td>
+                        <td class="p-3 font-bold text-slate-900">$${order.totalSales.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-slate-600">$${order.costSupplier.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-emerald-600">+$${order.profit.toFixed(2)}</td>
+                        <td class="p-3">
+                            ${isPending 
+                                ? `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-clock"></i> Pendiente</span>`
+                                : `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-check"></i> Enviado a DSers</span>`
+                            }
+                        </td>
+                        <td class="p-3">
+                            ${isPending 
+                                ? `<button onclick="processSingleOrderDSers('${order.id}')" class="px-3 py-1.5 bg-dsers-600 hover:bg-dsers-700 text-white rounded-lg font-bold text-[10px] tracking-wider uppercase transition-all shadow">
+                                    1-Click DSers Order
+                                   </button>`
+                                : `<div class="text-[10px]">
+                                    <span class="block font-bold text-slate-700">${order.courier}</span>
+                                    <span class="text-slate-400">${order.trackingNumber}</span>
+                                   </div>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function processSingleOrderDSers(orderId) {
+            const order = DROPSHIP_ORDERS.find(o => o.id === orderId);
+            if (!order) return;
+
+            order.status = "Enviado a DSers";
+            order.trackingNumber = `YUN${Math.floor(10000000 + Math.random() * 90000000)}CN`;
+            order.courier = "YunExpress Direct Line";
+
+            saveStorage();
+            updateAdminDashboard();
+            showToast(`Pedido ${orderId} procesado automáticamente con el proveedor en DSers.`, "success");
+        }
+
+        function processAllOrders1Click() {
+            let processed = 0;
+            DROPSHIP_ORDERS.forEach(order => {
+                if (order.status === "Pendiente de Envío") {
+                    order.status = "Enviado a DSers";
+                    order.trackingNumber = `YUN${Math.floor(10000000 + Math.random() * 90000000)}CN`;
+                    order.courier = "YunExpress Direct Line";
+                    processed++;
+                }
+            });
+
+            if (processed > 0) {
+                saveStorage();
+                updateAdminDashboard();
+                showToast(`¡Se enviaron ${processed} pedidos a procesamiento automático en DSers!`, "success");
+            } else {
+                showToast("No hay pedidos pendientes de procesamiento.", "info");
+            }
+        }
+
+        // FUNCIONES DE LA TIENDA PÚBLICA (RENDER, FILTROS, CARRITO)
+        function renderCategories() {
+            const container = document.getElementById("categoriesContainer");
+            container.innerHTML = CATEGORIES.map(cat => {
+                const isActive = state.selectedCategory === cat && !state.onlySale;
+                return `
+                    <button onclick="filterByCategory('${cat}')" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                        isActive 
+                        ? 'bg-fashion-900 text-white shadow-md' 
+                        : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-100'
+                    }">
+                        ${cat}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function renderSizeFilters() {
+            const container = document.getElementById("sizeFiltersContainer");
+            container.innerHTML = SIZES.map(sz => {
+                const isActive = state.selectedSize === sz;
+                return `
+                    <button onclick="toggleSizeFilter('${sz}')" class="w-9 h-9 rounded-xl text-xs font-bold transition-all ${
+                        isActive 
+                        ? 'bg-fashion-600 text-white shadow-sm' 
+                        : 'bg-stone-100 text-stone-700 border border-stone-200 hover:bg-stone-200'
+                    }">
+                        ${sz}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function filterByCategory(category) {
+            state.selectedCategory = category;
+            state.onlySale = false;
+            document.getElementById("activeCategoryTitle").innerText = category === "Todos" ? "Colección Completa" : `Colección ${category}`;
+            renderCategories();
+            renderProducts();
+        }
+
+        function filterSaleOnly() {
+            state.onlySale = true;
+            state.selectedCategory = "Todos";
+            document.getElementById("activeCategoryTitle").innerText = "Prendas en Rebaja %";
+            renderCategories();
+            renderProducts();
+        }
+
+        function toggleSizeFilter(size) {
+            state.selectedSize = state.selectedSize === size ? null : size;
+            renderSizeFilters();
+            renderProducts();
+        }
+
+        function handleSearch() {
+            state.searchQuery = document.getElementById("searchInput").value.trim().toLowerCase();
+            document.getElementById("clearSearchBtn").classList.toggle("hidden", state.searchQuery === "");
+            renderProducts();
+        }
+
+        function handleSearchMobile(val) {
+            state.searchQuery = val.trim().toLowerCase();
+            renderProducts();
+        }
+
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            state.searchQuery = "";
+            document.getElementById("clearSearchBtn").classList.add("hidden");
+            renderProducts();
+        }
+
+        function updatePriceLabel(value) {
+            document.getElementById("priceValue").innerText = `$${value}`;
+            state.maxPrice = parseFloat(value);
+        }
+
+        function applyFilters() {
+            state.sortBy = document.getElementById("sortBy").value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            state.selectedCategory = "Todos";
+            state.selectedSize = null;
+            state.searchQuery = "";
+            state.maxPrice = 2500;
+            state.sortBy = "popular";
+            state.onlySale = false;
+
+            document.getElementById("searchInput").value = "";
+            document.getElementById("clearSearchBtn").classList.add("hidden");
+            document.getElementById("priceRange").value = 2500;
+            document.getElementById("priceValue").innerText = "$2,500";
+            document.getElementById("sortBy").value = "popular";
+
+            renderCategories();
+            renderSizeFilters();
+            renderProducts();
+        }
+
+        function getFilteredProducts() {
+            return PRODUCTS.filter(p => {
+                const matchesCat = state.selectedCategory === "Todos" || p.category === state.selectedCategory;
+                const matchesSearch = p.name.toLowerCase().includes(state.searchQuery) || p.description.toLowerCase().includes(state.searchQuery);
+                const matchesSize = !state.selectedSize || p.sizes.includes(state.selectedSize);
+                const matchesPrice = p.price <= state.maxPrice;
+                const matchesSale = !state.onlySale || p.isSale;
+
+                return matchesCat && matchesSearch && matchesSize && matchesPrice && matchesSale;
+            }).sort((a, b) => {
+                if (state.sortBy === "price-asc") return a.price - b.price;
+                if (state.sortBy === "price-desc") return b.price - a.price;
+                if (state.sortBy === "rating") return b.rating - a.rating;
+                return b.reviews - a.reviews;
+            });
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById("productsGrid");
+            const emptyState = document.getElementById("emptyState");
+            const filtered = getFilteredProducts();
+
+            document.getElementById("productCount").innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+
+            grid.innerHTML = filtered.map(product => {
+                const isWish = state.wishlist.includes(product.id);
+                return `
+                    <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group fade-in">
+                        
+                        <div class="relative overflow-hidden cursor-pointer bg-stone-100" onclick="openProductModal(${product.id})">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500">
+                            
+                            ${product.isSale ? `
+                                <span class="absolute top-3 left-3 bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                                    Rebaja %
+                                </span>
+                            ` : ''}
+
+                            <button onclick="event.stopPropagation(); toggleWishlist(${product.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-stone-700 hover:text-rose-600 transition-colors shadow-sm">
+                                <i class="${isWish ? 'fa-solid fa-heart text-rose-600' : 'fa-regular fa-heart'} text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-fashion-600 uppercase tracking-widest block">${product.category}</span>
+                                <h3 onclick="openProductModal(${product.id})" class="font-serif font-bold text-stone-900 text-base leading-snug hover:text-fashion-600 cursor-pointer transition-colors mt-0.5">
+                                    ${product.name}
+                                </h3>
+                                <div class="flex items-center space-x-1 text-[11px] text-amber-500 mt-1">
+                                    <i class="fa-solid fa-star"></i>
+                                    <span class="font-bold text-stone-800">${product.rating}</span>
+                                    <span class="text-stone-400">(${product.reviews})</span>
+                                </div>
+                            </div>
+
+                            <!-- Selector de Talla Rápido -->
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold text-stone-400 mb-1">Elegir Talla:</label>
+                                <div class="flex flex-wrap gap-1">
+                                    ${product.sizes.map(sz => `
+                                        <button onclick="addToCartWithSize(${product.id}, '${sz}')" class="px-2 py-1 bg-stone-100 hover:bg-fashion-900 hover:text-white text-stone-700 rounded text-[10px] font-bold transition-colors">
+                                            ${sz}
+                                        </button>
+                                    `).join("")}
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
+                                <div>
+                                    ${product.isSale ? `<span class="text-[11px] text-stone-400 line-through block">$${product.originalPrice.toFixed(2)}</span>` : ''}
+                                    <span class="text-lg font-bold text-stone-900 font-serif">$${product.price.toFixed(2)}</span>
+                                </div>
+
+                                <button onclick="addToCartWithSize(${product.id}, '${product.sizes[0]}')" class="bg-fashion-900 hover:bg-stone-800 text-white p-3 rounded-xl transition-all shadow-sm" title="Añadir talla por defecto">
+                                    <i class="fa-solid fa-bag-shopping text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function openProductModal(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const modalContent = document.getElementById("modalContent");
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-2xl overflow-hidden bg-stone-100">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-80 object-cover">
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-fashion-600 uppercase tracking-widest">${product.category}</span>
+                            <h2 class="font-serif text-2xl font-bold text-stone-900">${product.name}</h2>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span class="text-amber-500"><i class="fa-solid fa-star"></i> ${product.rating}</span>
+                            <span class="text-stone-400">| ${product.reviews} reseñas de clientes</span>
+                        </div>
+
+                        <p class="text-xs text-stone-600 leading-relaxed">${product.description}</p>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-800 uppercase mb-2">Seleccionar Talla:</label>
+                            <div class="flex flex-wrap gap-2" id="modalSizeBtns">
+                                ${product.sizes.map((sz, idx) => `
+                                    <button onclick="selectModalSize(this, '${sz}')" class="size-btn px-3 py-1.5 border border-stone-300 rounded-xl text-xs font-bold ${idx === 0 ? 'bg-fashion-900 text-white border-fashion-900' : 'hover:bg-stone-100'}">
+                                        ${sz}
+                                    </button>
+                                `).join("")}
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-stone-100 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-stone-400 uppercase font-bold block">Precio</span>
+                                <span class="font-serif text-3xl font-bold text-fashion-700">$${product.price.toFixed(2)}</span>
+                            </div>
+                            <button onclick="addModalItemToCart(${product.id})" class="bg-fashion-900 hover:bg-stone-800 text-white text-xs uppercase tracking-widest font-bold px-6 py-3.5 rounded-xl shadow-md transition-all flex items-center space-x-2">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                <span>Agregar a la Bolsa</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modalContent.dataset.selectedSize = product.sizes[0];
+            document.getElementById("productModal").classList.remove("hidden");
+        }
+
+        function selectModalSize(btn, size) {
+            document.querySelectorAll("#modalSizeBtns .size-btn").forEach(b => {
+                b.classList.remove("bg-fashion-900", "text-white", "border-fashion-900");
+            });
+            btn.classList.add("bg-fashion-900", "text-white", "border-fashion-900");
+            document.getElementById("modalContent").dataset.selectedSize = size;
+        }
+
+        function addModalItemToCart(productId) {
+            const selectedSize = document.getElementById("modalContent").dataset.selectedSize;
+            addToCartWithSize(productId, selectedSize);
+            closeProductModal();
+        }
+
+        function closeProductModal() {
+            document.getElementById("productModal").classList.add("hidden");
+        }
+
+        function addToCartWithSize(productId, size) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const cartKey = `${productId}-${size}`;
+            const existing = state.cart.find(item => item.cartKey === cartKey);
+
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                state.cart.push({
+                    ...product,
+                    cartKey: cartKey,
+                    selectedSize: size,
+                    quantity: 1
+                });
+            }
+
+            saveStorage();
+            updateCartUI();
+            showToast(`Añadido: ${product.name} (Talla ${size})`, 'success');
+        }
+
+        function removeFromCart(cartKey) {
+            state.cart = state.cart.filter(item => item.cartKey !== cartKey);
+            saveStorage();
+            updateCartUI();
+        }
+
+        function updateQuantity(cartKey, delta) {
+            const item = state.cart.find(i => i.cartKey === cartKey);
+            if (!item) return;
+
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                removeFromCart(cartKey);
+            } else {
+                saveStorage();
+                updateCartUI();
+            }
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById("cartItemsContainer");
+            const badge = document.getElementById("cartBadge");
+            const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            badge.innerText = totalItems;
+            badge.classList.toggle("scale-0", totalItems === 0);
+            badge.classList.toggle("scale-100", totalItems > 0);
+
+            const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = subtotal >= 1000 || subtotal === 0 ? 0 : 99;
+            const total = subtotal + shipping;
+
+            document.getElementById("cartSubtotal").innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById("cartShipping").innerText = shipping === 0 ? "GRATIS" : `$${shipping.toFixed(2)}`;
+            document.getElementById("cartTotal").innerText = `$${total.toFixed(2)}`;
+            document.getElementById("checkoutTotalAmount").innerText = `$${total.toFixed(2)}`;
+
+            const progress = Math.min((subtotal / 1000) * 100, 100);
+            document.getElementById("shippingProgressBar").style.width = `${progress}%`;
+            document.getElementById("shippingProgressText").innerHTML = subtotal >= 1000 
+                ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-check"></i> ¡Felicidades! Tienes envío gratis</span>`
+                : `<span>Faltan $${(1000 - subtotal).toFixed(2)} para envío gratis</span><span>${progress.toFixed(0)}%</span>`;
+
+            document.getElementById("checkoutBtn").disabled = state.cart.length === 0;
+
+            if (state.cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 space-y-3">
+                        <i class="fa-solid fa-bag-shopping text-4xl text-stone-300"></i>
+                        <p class="text-xs font-semibold text-stone-500">Tu bolsa de compras está vacía</p>
+                        <button onclick="toggleCartDrawer()" class="text-xs text-fashion-600 font-bold hover:underline uppercase tracking-wider">Explorar Colección</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.cart.map(item => `
+                <div class="flex items-center space-x-3 p-3 bg-stone-50 rounded-2xl border border-stone-100">
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-cover rounded-xl flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs font-bold text-stone-800 truncate">${item.name}</h4>
+                        <span class="text-[10px] font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded-full inline-block my-1">Talla: ${item.selectedSize}</span>
+                        <span class="text-xs text-fashion-700 font-bold block font-serif">$${(item.price * item.quantity).toFixed(2)}</span>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <button onclick="updateQuantity('${item.cartKey}', -1)" class="w-6 h-6 bg-white border border-stone-200 rounded flex items-center justify-center text-xs text-stone-600">-</button>
+                            <span class="text-xs font-bold text-stone-800 w-4 text-center">${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.cartKey}', 1)" class="w-6 h-6 bg-white border border-stone-200 rounded flex items-center justify-center text-xs text-stone-600">+</button>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart('${item.cartKey}')" class="text-stone-400 hover:text-rose-500 p-2">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+            `).join("");
+        }
+
+        function toggleCartDrawer() {
+            document.getElementById("cartDrawer").classList.toggle("hidden");
+        }
+
+        function toggleWishlist(productId) {
+            const idx = state.wishlist.indexOf(productId);
+            if (idx > -1) {
+                state.wishlist.splice(idx, 1);
+                showToast("Eliminado de tus favoritos", "info");
+            } else {
+                state.wishlist.push(productId);
+                showToast("Guardado en tus favoritos", "success");
+            }
+            saveStorage();
+            updateWishlistUI();
+            renderProducts();
+        }
+
+        function updateWishlistUI() {
+            const badge = document.getElementById("wishlistBadge");
+            const count = state.wishlist.length;
+            badge.innerText = count;
+            badge.classList.toggle("scale-0", count === 0);
+            badge.classList.toggle("scale-100", count > 0);
+        }
+
+        function toggleWishlistModal() {
+            if (state.wishlist.length === 0) {
+                showToast("No tienes prendas en tu lista de favoritos aún.", "info");
+                return;
+            }
+            state.selectedCategory = "Todos";
+            renderProducts();
+            showToast(`Mostrando tus ${state.wishlist.length} artículos favoritos.`, "success");
+        }
+
+        function openCheckoutModal() {
+            toggleCartDrawer();
+            document.getElementById("checkoutForm").classList.remove("hidden");
+            document.getElementById("paymentSuccess").classList.add("hidden");
+            document.getElementById("checkoutModal").classList.remove("hidden");
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById("checkoutModal").classList.add("hidden");
+        }
+
+        // PROCESAMIENTO DE PAGO EN TIENDA AUTO-SINC CON ADMIN DROPSHIPPING
+        function processPayment(event) {
+            event.preventDefault();
+            const btn = document.getElementById("paySubmitBtn");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Procesando...</span>`;
+
+            const name = document.getElementById("custName").value.trim() || "Cliente Anónimo";
+            const city = document.getElementById("custCity").value.trim() || "Ciudad de México";
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Pagar Pedido</span> <i class="fa-solid fa-check text-xs"></i>`;
+                
+                const newOrderId = `EU-${Math.floor(10000 + Math.random() * 90000)}`;
+
+                // AGREGAR NUEVO PEDIDO A LA LISTA DE DROPSHIPPING AUTOMÁTICAMENTE
+                state.cart.forEach(item => {
+                    const totalSales = item.price * item.quantity;
+                    const costSupplier = item.costPrice * item.quantity;
+                    const profit = totalSales - costSupplier;
+
+                    DROPSHIP_ORDERS.unshift({
+                        id: newOrderId,
+                        customerName: name,
+                        city: city,
+                        items: `${item.name} (Talla ${item.selectedSize}) x${item.quantity}`,
+                        totalSales: totalSales,
+                        costSupplier: costSupplier,
+                        profit: profit,
+                        status: "Pendiente de Envío",
+                        trackingNumber: "Pendiente DSers",
+                        courier: "YunExpress / AliExpress Direct",
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                });
+
+                document.getElementById("checkoutForm").classList.add("hidden");
+                document.getElementById("orderIdText").innerText = `#${newOrderId}`;
+                document.getElementById("paymentSuccess").classList.remove("hidden");
+
+                state.cart = [];
+                saveStorage();
+                updateCartUI();
+                updateAdminDashboard();
+
+                showToast("¡Pedido registrado y sincronizado en el Panel de Dropshipping DSers!", "success");
+            }, 1200);
+        }
+
+        function finishOrder() {
+            closeCheckoutModal();
+        }
+
+        function scrollToProducts() {
+            document.getElementById("catalogSection").scrollIntoView({ behavior: "smooth" });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById("mobileMenu").classList.toggle("hidden");
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById("toast");
+            const toastMsg = document.getElementById("toastMessage");
+            const toastIcon = document.getElementById("toastIcon");
+
+            toastMsg.innerText = message;
+            toastIcon.className = type === 'success' 
+                ? "fa-solid fa-circle-check text-emerald-400 text-sm" 
+                : "fa-solid fa-circle-info text-sky-400 text-sm";
+
+            toast.classList.remove("translate-y-20", "opacity-0");
+            toast.classList.add("translate-y-0", "opacity-100");
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-0", "opacity-100");
+                toast.classList.add("translate-y-20", "opacity-0");
+            }, 3000);
+        }
+
+        // PERSISTENCIA
+        function saveStorage() {
+            try {
+                localStorage.setItem("estilourbano_cart", JSON.stringify(state.cart));
+                localStorage.setItem("estilourbano_wishlist", JSON.stringify(state.wishlist));
+                localStorage.setItem("estilourbano_products", JSON.stringify(PRODUCTS));
+                localStorage.setItem("estilourbano_orders", JSON.stringify(DROPSHIP_ORDERS));
+            } catch (e) {
+                console.error("Error guardando almacenamiento", e);
+            }
+        }
+
+        function loadStorage() {
+            try {
+                const cart = localStorage.getItem("estilourbano_cart");
+                const wish = localStorage.getItem("estilourbano_wishlist");
+                const prods = localStorage.getItem("estilourbano_products");
+                const orders = localStorage.getItem("estilourbano_orders");
+
+                if (cart) state.cart = JSON.parse(cart);
+                if (wish) state.wishlist = JSON.parse(wish);
+                if (prods) PRODUCTS = JSON.parse(prods);
+                if (orders) DROPSHIP_ORDERS = JSON.parse(orders);
+            } catch (e) {
+                console.error("Error cargando almacenamiento", e);
+            }
+        }
+    </script>
+</body>
+</html>
